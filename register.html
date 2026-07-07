@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ thống Nhận diện - Đăng ký</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .auth-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px;}
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;}
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;}
+        button:hover { background: #0069d9; }
+        .switch-link { text-align: center; margin-top: 15px; font-size: 14px; }
+        .switch-link a { color: #28a745; text-decoration: none; }
+        
+        /* CSS cho phần thông báo lỗi mật khẩu */
+        .error-message { color: #dc3545; font-size: 13px; margin: -5px 0 10px 0; display: none; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h2>ĐĂNG KÝ HỆ THỐNG</h2>
+        <form id="registerForm" action="/register" method="post">
+            <input type="text" name="username" placeholder="Tên tài khoản mong muốn" required>
+            
+            <input type="password" id="password" name="password" placeholder="Mật khẩu bảo mật" required>
+            <input type="password" id="repassword" placeholder="Xác nhận lại mật khẩu" required>
+            
+            <div id="passwordError" class="error-message">Mật khẩu xác nhận không trùng khớp!</div>
+            
+            <button type="submit">Đăng ký tài khoản</button>
+        </form>
+        <div class="switch-link">Đã có tài khoản? <a href="/login">Đăng nhập</a></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const password = document.getElementById('password');
+        const repassword = document.getElementById('repassword');
+        const errorMsg = document.getElementById('passwordError');
+
+        // Hàm kiểm tra tính trùng khớp của mật khẩu
+        function validatePassword() {
+            if (password.value !== repassword.value && repassword.value !== "") {
+                errorMsg.style.display = "block";
+                repassword.style.border = "1px solid #dc3545";
+                return false;
+            } else {
+                errorMsg.style.display = "none";
+                repassword.style.border = "1px solid #ddd";
+                return true;
+            }
+        }
+
+        // Kiểm tra ngay khi người dùng đang gõ phím
+        password.addEventListener('input', validatePassword);
+        repassword.addEventListener('input', validatePassword);
+
+        // Chặn không cho gửi dữ liệu lên Server nếu mật khẩu sai lệch
+        form.addEventListener('submit', function(event) {
+            if (!validatePassword()) {
+                event.preventDefault(); // Dừng hành động submit form
+                alert('Vui lòng kiểm tra lại mật khẩu xác nhận!');
+            }
+        });
+    </script>
+</body>
+</html>

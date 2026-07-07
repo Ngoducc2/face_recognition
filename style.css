@@ -1,0 +1,97 @@
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #f4f6f9; 
+    margin: 0; 
+    padding: 20px; 
+    color: #333; 
+}
+
+h1 { 
+    color: #1a73e8; 
+    text-align: center; 
+    text-transform: uppercase; 
+    margin-bottom: 20px; 
+    font-size: 24px;
+}
+
+.container { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 20px; 
+    justify-content: center; 
+    max-width: 1400px; 
+    margin: 0 auto; 
+}
+
+/* Khu vực hiển thị camera */
+.video-box { 
+    flex: 1; 
+    min-width: 500px; 
+    background: white; 
+    padding: 15px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    text-align: center;
+}
+
+.video-box img { 
+    width: 100%; 
+    max-width: 640px; 
+    border-radius: 8px; 
+    border: 1px solid #ddd; 
+}
+
+/* Khu vực hiển thị thông số và biểu đồ */
+.dashboard-box { 
+    flex: 1; 
+    min-width: 500px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+}
+
+/* Thẻ chứa các chỉ số nhanh (Cards) */
+.cards-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 10px; 
+}
+
+.card { 
+    background: white; 
+    padding: 15px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+    border-left: 5px solid #1a73e8; 
+}
+
+.card.alert { 
+    border-left-color: #ea4335; 
+}
+
+.card.success { 
+    border-left-color: #34a853; 
+}
+
+.card-title { 
+    font-size: 12px; 
+    text-transform: uppercase; 
+    color: #777; 
+    font-weight: bold; 
+}
+
+.card-value { 
+    font-size: 22px; 
+    font-weight: bold; 
+    margin-top: 5px; 
+    color: #222; 
+}
+
+/* Thẻ chứa biểu đồ */
+.chart-container { 
+    background: white; 
+    padding: 15px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    height: 280px; 
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ thống AI nhận dạng khuôn mặt</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #f4f6f9; color: #333; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-toggle { padding: 10px 20px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+        .btn-toggle.on { background: #2ecc71; }
+        .logout-link { color: #f1c40f; text-decoration: none; font-weight: bold; margin-left: 15px; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .video-container { text-align: center; }
+        
+        img { border: 4px solid #2c3e50; border-radius: 8px; width: 100%; max-width: 800px; height: auto; background: #000; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; text-align: center; }
+        .stat-box { background: #ecf0f1; padding: 12px; border-radius: 6px; }
+        .stat-box h4 { margin: 0 0 5px 0; color: #7f8c8d; font-size: 14px; }
+        .stat-box p { margin: 0; font-size: 20px; font-weight: bold; color: #2c3e50; }
+        .chart-container { position: relative; height: 180px; width: 100%; margin-bottom: 15px; }
+        
+        /* CSS Nút bấm Check-in / Out */
+        .action-btns { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+        .btn-action { padding: 15px 30px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 8px; cursor: pointer; transition: transform 0.1s; }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-in { background: #27ae60; }
+        .btn-out { background: #c0392b; }
+        
+        /* CSS Bảng báo cáo */
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .report-table th, .report-table td { border: 1px solid #bdc3c7; padding: 10px; text-align: center; }
+        .report-table th { background-color: #ecf0f1; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Xin chào, {{ username }}!</h2>
+        <div>
+            <a href="/api/export_csv" class="btn-toggle" style="background: #3498db; text-decoration: none; padding: 10px 15px; margin-right: 10px; font-size: 14px;">XUẤT BÁO CÁO CSV</a>
+            <button id="toggleCamBtn" class="btn-toggle" onclick="toggleCamera()">TẮT CAMERA</button>
+            <a class="logout-link" href="/logout">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card video-container">
+            <h3 style="margin-top: 0; text-align: left; color: #2c3e50;">Luồng Camera - Chấm công chủ động</h3>
+            <img src="/video_feed" id="video_stream" alt="Video Feed">
+            
+            <div class="action-btns">
+                <button class="btn-action btn-in" onclick="markAttendance('Đi làm')">👋 ĐI LÀM</button>
+                <button class="btn-action btn-out" onclick="markAttendance('Tan làm')">🏃 TAN LÀM</button>
+            </div>
+            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">Vui lòng đứng thẳng vào khung hình và bấm nút.</p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top: 0; color: #2c3e50;">Kiểm Tra Báo Cáo Tháng</h3>
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="month" id="monthPicker" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <button onclick="fetchReport()" style="padding: 9px 15px; background: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">TRA CỨU</button>
+            </div>
+
+            <table class="report-table" id="reportTable">
+                <thead>
+                    <tr>
+                        <th>Họ và Tên</th>
+                        <th>Tổng số buổi đi làm</th>
+                    </tr>
+                </thead>
+                <tbody id="reportData">
+                    <tr><td colspan="2" style="color: #7f8c8d;">Chọn tháng và bấm tra cứu...</td></tr>
+                </tbody>
+            </table>
+
+            <hr style="border: 1px solid #ecf0f1; margin: 25px 0;">
+            
+            <h3 style="color: #2c3e50;">Chỉ Số Hệ Thống AI</h3>
+            <div class="stats-grid">
+                <div class="stat-box"><h4>Tốc độ</h4><p id="stat-fps">0.0</p></div>
+                <div class="stat-box"><h4>Xử lý AI</h4><p id="stat-inference">0 ms</p></div>
+                <div class="stat-box"><h4>Số người</h4><p id="stat-count" style="color: #e67e22;">0</p></div>
+            </div>
+
+            <h4 style="margin: 10px 0 5px 0; color: #34495e;">Biểu đồ Hoạt động</h4>
+            <div class="chart-container"><canvas id="speedChart"></canvas></div>
+        </div>
+    </div>
+
+    <script>
+        // Set mặc định tháng hiện tại cho ô chọn tháng
+        document.getElementById('monthPicker').value = new Date().toISOString().slice(0, 7);
+
+        // --- GỌI API CHẤM CÔNG ---
+        function markAttendance(actionType) {
+            fetch('/api/mark_attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: actionType })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('⚠️ ' + data.message);
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        // --- GỌI API LẤY BÁO CÁO THÁNG ---
+        function fetchReport() {
+            const month = document.getElementById('monthPicker').value;
+            if(!month) return alert("Vui lòng chọn tháng!");
+            
+            fetch(`/api/monthly_report?month=${month}`)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('reportData');
+                tbody.innerHTML = ''; // Xóa dữ liệu cũ
+                if(data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2" style="color: #e74c3c;">Không có dữ liệu trong tháng này</td></tr>';
+                    return;
+                }
+                data.forEach(row => {
+                    tbody.innerHTML += `<tr><td><strong>${row.name}</strong></td><td style="color: #27ae60; font-weight: bold;">${row.days} ngày</td></tr>`;
+                });
+            })
+            .catch(err => console.error("Lỗi lấy báo cáo:", err));
+        }
+
+        // --- CÁC HÀM CŨ: BẬT TẮT CAM VÀ BIỂU ĐỒ ---
+        function toggleCamera() {
+            fetch('/api/toggle_camera', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                const btn = document.getElementById('toggleCamBtn');
+                if (data.is_camera_on) { btn.innerText = "TẮT CAMERA"; btn.classList.remove('on'); } 
+                else { btn.innerText = "BẬT CAMERA"; btn.classList.add('on'); }
+            });
+        }
+
+        const maxDataPoints = 20;
+        const chartLabels = Array(maxDataPoints).fill('');
+        const ctxSpeed = document.getElementById('speedChart').getContext('2d');
+        const speedChart = new Chart(ctxSpeed, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    { label: 'FPS', data: Array(maxDataPoints).fill(0), borderColor: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)', yAxisID: 'y-fps', tension: 0.3, borderWidth: 2 },
+                    { label: 'AI (ms)', data: Array(maxDataPoints).fill(0), borderColor: '#9b59b6', backgroundColor: 'rgba(155, 89, 182, 0.1)', yAxisID: 'y-ms', tension: 0.3, borderWidth: 2 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    'y-fps': { type: 'linear', position: 'left', min: 0, max: 40 },
+                    'y-ms': { type: 'linear', position: 'right', min: 0, grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+
+        setInterval(() => {
+            fetch('/api/stats').then(res => res.json()).then(stats => {
+                document.getElementById('stat-fps').innerText = stats.fps;
+                document.getElementById('stat-inference').innerText = stats.inference_time + ' ms';
+                document.getElementById('stat-count').innerText = stats.face_count;
+
+                const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                speedChart.data.labels.push(nowStr); speedChart.data.labels.shift();
+                speedChart.data.datasets[0].data.push(stats.fps); speedChart.data.datasets[0].data.shift();
+                speedChart.data.datasets[1].data.push(stats.inference_time); speedChart.data.datasets[1].data.shift();
+                speedChart.update('none');
+            }).catch(() => {});
+        }, 1000);
+        
+        // Load báo cáo ngay khi vừa vào trang
+        fetchReport();
+    </script>
+</body>
+</html>
