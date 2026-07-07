@@ -2,11 +2,13 @@
 face recognition system
 Bước 1: Kiểm tra môi trường máy tính
 Python: Đảm bảo máy đã cài Python phiên bản từ 3.8 đến 3.11 (InsightFace hoạt động ổn định nhất ở các phiên bản này).
+
 Bước 2: Cài đặt các thư viện bổ sung
 Mở Terminal/Command Prompt trong VS Code tại thư mục dự án và chạy lệnh cài đặt tất cả các thư viện cần thiết (ở bản mới này đã bổ sung thêm pydantic để truyền nhận dữ liệu API):
 
 Bash
 pip install fastapi uvicorn opencv-python insightface onnxruntime numpy pydantic Jinja2
+
 Bước 3: Sắp xếp cấu trúc thư mục cho đúng
 Anh kiểm tra lại xem các file đã nằm đúng vị trí quy định chưa nhé:
 
@@ -22,6 +24,7 @@ Thư mục_Dự_Án/
 ├── face_engine.py          # File xử lý AI
 ├── main.py                 # File server FastAPI mới
 └── README.md
+
 Bước 4: Khởi chạy hệ thống
 Tại Terminal của VS Code, anh gõ lệnh sau để kích hoạt Server:
 
